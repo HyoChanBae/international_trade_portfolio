@@ -1,0 +1,14 @@
+{
+  "$schema": "https://openapi.vercel.sh/vercel.json",
+  "functions": {
+    "api/data.ts": {
+      "maxDuration": 60
+    },
+    "api/auth.ts": {
+      "maxDuration": 60
+    },
+    "api/yahoo.ts": {
+      "maxDuration": 30
+    }
+  }
+}
