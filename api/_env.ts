@@ -33,13 +33,25 @@ function unquote(value: string) {
 // 로컬 .env.local에만 있는 Snowflake·Supabase 값은 여기서 채웁니다.
 const file = findEnvFile();
 if (file) {
+  const loaded = new Set<string>();
   for (const line of readFileSync(file, 'utf8').split(/\r?\n/)) {
     const trimmed = line.trim();
     if (!trimmed || trimmed.startsWith('#')) continue;
     const separator = trimmed.indexOf('=');
     if (separator <= 0) continue;
     const name = trimmed.slice(0, separator).trim();
-    if (!/^[A-Za-z_][A-Za-z0-9_]*$/.test(name) || process.env[name]?.trim()) continue;
+    if (!/^[A-Za-z_][A-Za-z0-9_]*$/.test(name)) continue;
+    // 로컬에서는 .env.local을 단일 기준으로 사용합니다. vercel dev가 이전 프로젝트의
+    // 원격 환경변수를 주입하더라도 현재 체크아웃의 Snowflake 키가 우선합니다.
     process.env[name] = unquote(trimmed.slice(separator + 1).trim());
+    loaded.add(name);
+  }
+  // 두 키 변수가 동시에 있으면 _snowflake.ts는 BASE64를 우선합니다. 로컬 파일이
+  // 한 형식만 선언한 경우 Vercel에서 주입된 다른 형식의 오래된 키를 제거합니다.
+  if (loaded.has('SNOWFLAKE_PRIVATE_KEY') && !loaded.has('SNOWFLAKE_PRIVATE_KEY_BASE64')) {
+    delete process.env.SNOWFLAKE_PRIVATE_KEY_BASE64;
+  }
+  if (loaded.has('SNOWFLAKE_PRIVATE_KEY_BASE64') && !loaded.has('SNOWFLAKE_PRIVATE_KEY')) {
+    delete process.env.SNOWFLAKE_PRIVATE_KEY;
   }
 }

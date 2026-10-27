@@ -5,11 +5,12 @@ import { AccountsPage } from './components/AllAccountsPage';
 import { InvestmentJournalSheet } from './components/InvestmentJournal';
 import { InvestmentHorizonPage } from './components/InvestmentHorizon';
 import { YahooFinanceChart } from './components/YahooFinanceChart';
+import { HmrcTradeMonitor } from './components/HmrcTradeMonitor';
 import { userDisplayName } from './lib/auth';
 import type { LukaAuthSession } from './components/AuthGate';
 import './app.css';
 
-type Tab = 'bots' | 'botScenario' | 'dashboard' | 'accounts' | 'calendar' | 'scenario' | 'dailyReport' | 'tradingReport' | 'journal' | 'journalLong' | 'journalMid' | 'journalShort' | 'reportFinal' | 'chart' | 'reportSettings' | 'alerts' | 'plan';
+type Tab = 'bots' | 'botScenario' | 'dashboard' | 'accounts' | 'calendar' | 'scenario' | 'dailyReport' | 'tradingReport' | 'journal' | 'journalLong' | 'journalMid' | 'journalShort' | 'reportFinal' | 'chart' | 'reportSettings' | 'alerts' | 'plan' | 'hmrcTrade';
 type ModalInfo = { title: string; body: string } | null;
 
 const navItems: { id: Tab; label: string; shortLabel: string; icon: string; sub?: boolean }[] = [
@@ -17,6 +18,7 @@ const navItems: { id: Tab; label: string; shortLabel: string; icon: string; sub?
   // { id: 'bots', label: '봇 랭킹', shortLabel: '봇 랭킹', icon: '◈' },
   { id: 'botScenario', label: '봇 랭킹_시나리오', shortLabel: '봇 시나리오', icon: '◈' },
   { id: 'dashboard', label: '대시보드', shortLabel: '대시보드', icon: '⌂' },
+  { id: 'hmrcTrade', label: 'UK Trade Monitor', shortLabel: 'UK Trade', icon: '▥' },
   { id: 'scenario', label: '내 투자 시나리오', shortLabel: '시나리오', icon: '＋' },
   { id: 'dailyReport', label: '일일 리포트', shortLabel: '시장 리포트', icon: '▤' },
   { id: 'tradingReport', label: '일일 트레이딩 리포트', shortLabel: '트레이딩', icon: '↗' },
@@ -85,6 +87,7 @@ export function App({ auth }: { auth: LukaAuthSession }) {
             <span className="profile" aria-label="내 프로필">{userDisplayName(user)[0]}</span>
           </header>
           {tab === 'dashboard' && <Home period={period} setPeriod={setPeriod} setModal={setModal} setTab={setTab} />}
+          {tab === 'hmrcTrade' && <HmrcTradeMonitor />}
           {tab === 'bots' && <SnowflakeBots setModal={setModal} />}
           {tab === 'botScenario' && <SnowflakeBots scenario setModal={setModal} />}
           {tab === 'accounts' && <AccountsPage />}

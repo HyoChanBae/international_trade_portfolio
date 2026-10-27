@@ -1,0 +1,9 @@
+Vercel CLI 65.2.0 (Node.js 24.15.0)
+> Running Dev Command “vite --port $PORT”
+> Local resources:
+  Vercel Queues   http://127.0.0.1:4782
+  Vercel Schedules http://127.0.0.1:4784
+  Runtime Cache   http://127.0.0.1:4783/v1/suspense-cache/
+> Ready! Available at http://localhost:3001
+Snowflake API error 390144 JWT token is invalid.  [daf711f5-52fe-497b-ad42-b3a692034122]
+Snowflake API error 390144 JWT token is invalid.  [18e14894-853a-4f81-a7b3-6a3b0e839f2c]

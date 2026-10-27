@@ -8,6 +8,17 @@ export type BotSnapshot = {
   quotes: Row[];
 };
 
+export type HmrcTradeRow = {
+  MONTH_ID?: string;
+  FLOW_TYPE_ID?: string;
+  FLOW_DESCRIPTION?: string;
+  HS2CODE?: string;
+  HS4CODE?: string;
+  HS6CODE?: string;
+  TRADE_VALUE?: number;
+  NET_MASS?: number;
+};
+
 const BOT_SNAPSHOT_TTL_MS = 15_000;
 const botSnapshotCache = new Map<string, { data: BotSnapshot; expiresAt: number }>();
 const botSnapshotRequests = new Map<string, Promise<BotSnapshot>>();
@@ -90,6 +101,11 @@ export function readSnowflakeReportSnapshot(): Promise<Row[]> {
     })
     .finally(() => { reportSnapshotRequest = null; });
   return reportSnapshotRequest;
+}
+
+export async function readHmrcTradeSnapshot(): Promise<HmrcTradeRow[]> {
+  const result = await request<{ data: HmrcTradeRow[] }>('/api/data?view=hmrc-trade');
+  return result.data ?? [];
 }
 
 export async function mutateSnowflake(action: string, data: Row = {}) {

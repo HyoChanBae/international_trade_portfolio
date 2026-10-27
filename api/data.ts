@@ -63,6 +63,34 @@ async function selectReportSnapshot() {
   );
 }
 
+async function selectHmrcTradeSnapshot() {
+  const hs6Codes = [
+    '270900', '271111', '271121', '271112', '271113', '290121', '290122', '290220',
+    '390110', '390210', '841182', '740311', '740811', '760110', '750210', '720839',
+    '720917', '854231', '854232', '854141', '870380', '850760', '100199', '090111',
+    '710812', '710691',
+  ].map((code) => `'${code}'`).join(', ');
+  return query(`
+    SELECT
+      TO_VARCHAR(O.MONTH_ID) AS MONTH_ID,
+      TO_VARCHAR(O.FLOW_TYPE_ID) AS FLOW_TYPE_ID,
+      COALESCE(TO_VARCHAR(F.FLOWTYPEDESCRIPTION), TO_VARCHAR(O.FLOW_TYPE_ID)) AS FLOW_DESCRIPTION,
+      TO_VARCHAR(C.HS2CODE) AS HS2CODE,
+      TO_VARCHAR(C.HS4CODE) AS HS4CODE,
+      TO_VARCHAR(C.HS6CODE) AS HS6CODE,
+      SUM(COALESCE(TRY_TO_DOUBLE(O.VALUE), 0)) AS TRADE_VALUE,
+      SUM(COALESCE(TRY_TO_DOUBLE(O.NET_MASS), 0)) AS NET_MASS
+    FROM ${tableName('UKTI_OTS')} O
+    JOIN ${tableName('UKTI_COMMODITY')} C
+      ON TO_VARCHAR(C.COMMODITYID) = TO_VARCHAR(O.COMMODITY_ID)
+    LEFT JOIN ${tableName('UKTI_FLOW_TYPE')} F
+      ON TO_VARCHAR(F.FLOWTYPEID) = TO_VARCHAR(O.FLOW_TYPE_ID)
+    WHERE TO_VARCHAR(C.HS6CODE) IN (${hs6Codes})
+    GROUP BY 1, 2, 3, 4, 5, 6
+    ORDER BY 1, 6
+  `);
+}
+
 async function userFrom(request: Request): Promise<ApiUser> {
   const session = sessionFromRequest(request);
   if (!session) throw Object.assign(new Error('로그인이 필요합니다.'), { status: 401 });
@@ -203,9 +231,12 @@ async function handlePost(request: Request, user: ApiUser) {
 
 async function fetchHandler(request: Request) {
   try {
-    const user = await userFrom(request);
     if (request.method === 'GET') {
       const url = new URL(request.url);
+      if (url.searchParams.get('view') === 'hmrc-trade') {
+        return json({ data: await selectHmrcTradeSnapshot() }, 200, 'public, max-age=900');
+      }
+      const user = await userFrom(request);
       if (url.searchParams.get('view') === 'bots') {
         return json({ data: await selectBotSnapshot(url.searchParams.get('scenario') === '1') });
       }
@@ -215,7 +246,7 @@ async function fetchHandler(request: Request) {
       const table = url.searchParams.get('table')?.toUpperCase() || '';
       return json({ data: await selectTable(table, user) });
     }
-    if (request.method === 'POST') return handlePost(request, user);
+    if (request.method === 'POST') return handlePost(request, await userFrom(request));
     return json({ error: '허용되지 않은 메서드입니다.' }, 405);
   } catch (reason) {
     const error = reason as { message?: string; code?: string; status?: number };

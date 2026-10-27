@@ -1,19 +1,12 @@
 import { StrictMode } from 'react';
 import { createRoot } from 'react-dom/client';
-import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import { App } from './App';
-import { AuthGate } from './components/AuthGate';
-
-const queryClient = new QueryClient({
-  defaultOptions: {
-    queries: { refetchOnWindowFocus: false },
-  },
-});
+import { HmrcTradeMonitor } from './components/HmrcTradeMonitor';
+import './app.css';
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
-    <QueryClientProvider client={queryClient}>
-      <AuthGate>{(session) => <App auth={session} />}</AuthGate>
-    </QueryClientProvider>
+    <main className="hmrc-standalone-main">
+      <HmrcTradeMonitor />
+    </main>
   </StrictMode>,
 );
